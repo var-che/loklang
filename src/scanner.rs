@@ -1,21 +1,39 @@
+use std::collections::HashMap;
+
+fn is_alpha(c: char) -> bool {
+    (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
 pub struct Scanner {
     source: String,
     tokens: Vec<Token>,
     start: usize,
     current: usize,
     line: usize,
+    keywords: HashMap<String, TokenType>,
 }
 
 impl Scanner {
     pub fn new(source: &str) -> Self {
+        let keywords = Scanner::initialize_keywords();
+
         Self {
             source: source.to_string(),
             tokens: Vec::new(),
             start: 0,
             current: 0,
             line: 1,
+            keywords: keywords,
         }
     }
+    fn initialize_keywords() -> HashMap<String, TokenType> {
+        let mut keywords = HashMap::new();
+        keywords.insert("and".to_string(), TokenType::AND);
+        keywords.insert("or".to_string(), TokenType::OR);
+        keywords.insert("var".to_string(), TokenType::VAR);
+        keywords
+    }
+
     pub fn scan_tokens(self: &mut Self) -> Result<Vec<Token>, String> {
         let mut errors = vec![];
 
@@ -95,9 +113,33 @@ impl Scanner {
             _ => {
                 if c.is_digit(10) {
                     Ok(self.number()?)
+                } else if is_alpha(c) {
+                    Ok(self.identifier()?)
                 } else {
                     return Err(format!("Unrecognized char: {}", c));
                 }
+            }
+        }
+    }
+    fn identifier(self: &mut Self) -> Result<(), String> {
+        while is_alpha(self.peek()) {
+            self.advance();
+        }
+
+        let identifier: String = self
+            .source
+            .get(self.start..self.current)
+            .map_or("", |s| s)
+            .to_string();
+
+        match self.keywords.get(&identifier) {
+            Some(reserved) => {
+                self.add_token(reserved.clone());
+                Ok(())
+            }
+            None => {
+                self.add_token(TokenType::Identifier);
+                Ok(())
             }
         }
     }
@@ -399,5 +441,25 @@ mod tests {
             Some(LiteralValue::FloatValue(val)) => assert_eq!(val, 1444.12),
             _ => panic!("Incorrect float value"),
         }
+    }
+    #[test]
+    fn handle_identifiers() {
+        let source = "var verm_at = 23.3";
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens().unwrap();
+        println!("\n{:?}\n", scanner.tokens);
+        assert_eq!(scanner.tokens[0].token_type, TokenType::VAR);
+        assert_eq!(scanner.tokens[1].token_type, TokenType::Identifier);
+        assert_eq!(scanner.tokens[2].token_type, TokenType::Equal);
+        assert_eq!(scanner.tokens[3].token_type, TokenType::Number);
+    }
+    #[test]
+    fn handle_reserved_keywords() {
+        let source = "and or";
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens().unwrap();
+
+        assert_eq!(scanner.tokens[0].token_type, TokenType::AND);
+        assert_eq!(scanner.tokens[1].token_type, TokenType::OR);
     }
 }
