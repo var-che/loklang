@@ -18,10 +18,8 @@ impl Parser {
     fn equality(&mut self) -> Expr {
         let lhs = self.comparison();
 
-        while self.match(BangEqual, EqualEqual) {
-            let operator: Token = self.previous();
-            let rhs: Expr = self.comparison();
-
+        while self.match_token(BangEqual, EqualEqual) {
+            todo!()
         }
 
         todo!()
