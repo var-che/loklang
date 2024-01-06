@@ -1,5 +1,7 @@
 mod expr;
+mod parser;
 mod scanner;
+
 use crate::scanner::*;
 
 use std::env;

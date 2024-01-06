@@ -1,4 +1,4 @@
-use crate::scanner::{Token, TokenType};
+use crate::scanner::{self, Token, TokenType};
 
 pub enum LiteralValue {
     Number(f32),
@@ -7,7 +7,20 @@ pub enum LiteralValue {
     False,
     Nil,
 }
-
+fn unwrap_as_f32(literal: Option<scanner::LiteralValue>) -> f32 {
+    match literal {
+        Some(scanner::LiteralValue::IntValue(x)) => x as f32,
+        Some(scanner::LiteralValue::FloatValue(x)) => x as f32,
+        _ => panic!("Could not unwrap as f32"),
+    }
+}
+fn unwrap_as_string(literal: Option<scanner::LiteralValue>) -> String {
+    match literal {
+        Some(scanner::LiteralValue::StringValue(s)) => s.clone(),
+        Some(scanner::LiteralValue::IdentifierValue(s)) => s.clone(),
+        _ => panic!("Could not unwrap as string"),
+    }
+}
 impl LiteralValue {
     pub fn to_string(&self) -> String {
         match self {
@@ -18,27 +31,37 @@ impl LiteralValue {
             LiteralValue::Nil => "nil".to_string(),
         }
     }
+    pub fn from_token(token: Token) -> Self {
+        match token.token_type {
+            TokenType::Number => Self::Number(unwrap_as_f32(token.literal)),
+            TokenType::StringLit => Self::StringValue(unwrap_as_string(token.literal)),
+            TokenType::False => Self::False,
+            TokenType::True => Self::True,
+            TokenType::Nil => Self::Nil,
+            _ => panic!("Could not create literalvalue from {:?}", token),
+        }
+    }
 }
 
-pub enum Expr {
+pub enum Expr<'a> {
     Binary {
-        left: Box<Expr>,
-        operator: Token,
-        right: Box<Expr>,
+        left: Box<Expr<'a>>,
+        operator: &'a Token,
+        right: Box<Expr<'a>>,
     },
     Grouping {
-        expression: Box<Expr>,
+        expression: Box<Expr<'a>>,
     },
     Literal {
         value: LiteralValue,
     },
     Unary {
-        operator: Token,
-        right: Box<Expr>,
+        operator: &'a Token,
+        right: Box<Expr<'a>>,
     },
 }
 
-impl Expr {
+impl<'a> Expr<'a> {
     pub fn to_string(&self) -> String {
         match self {
             Expr::Unary { operator, right } => {
