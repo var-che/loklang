@@ -5,6 +5,11 @@ I am an average programmer, meaning that the things that I want from
 a language, will need most of the other programmers. Not gonna chase
 some eccentric things that I have never used.
 
+Good language means taking all the cool ideas from different languages,
+and putting them into one. Same thing as Google did with their search
+engine, took some from Yahoo, AskJeeves and boom. I will not reinvet
+the wheels.
+
 I like JS and Rust as well, and I feel like I would enjoy a language
 that will look like them. Gleam is another one that I like. If the
 syntax of the language does not apeal to me, I won't bother a lot.
@@ -22,3 +27,5 @@ of make them not spooky.
 - rusty/TSy syntax
 - ability that you can do with Pony, you should do it with this one
 - take inspiration for some things from Savi
+- composition > inheritense
+- 80/20 functional to oo things. No interfaces, abstract classes, yes objects
