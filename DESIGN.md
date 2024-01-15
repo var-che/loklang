@@ -29,3 +29,24 @@ of make them not spooky.
 - take inspiration for some things from Savi
 - composition > inheritense
 - 80/20 functional to oo things. No interfaces, abstract classes, yes objects
+
+
+## The looks
+
+actor Main {
+    let mut age = 23;
+
+    be update_age(by_how_much: (Int | String)){
+       self.updating_age(by_how_much)
+    }
+    fn updating_age(by: Int)  {
+        self.age =+ by;
+    }
+    fn updating_age(by: String)  {
+        let newly = by
+            |> String.trim_string()
+            |> String.parse_to_int()
+
+        self.age =+ newly;
+    }
+}
